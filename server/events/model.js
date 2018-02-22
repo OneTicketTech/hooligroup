@@ -4,7 +4,7 @@ var eventSchema = mongoose.Schema({
 	name: String,
 	type: String,
 	tags: [String],
-	members: [String],
+	members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 	location: String,
 	begin_time: Date,
 	end_time: Date,

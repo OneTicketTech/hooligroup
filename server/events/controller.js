@@ -32,9 +32,12 @@ const Create = (req, res) => {
 		} else {
 			// create event
 			console.log(groupDoc)
-			if (!groupDoc.admins.includes(user.id))
-				res.send(err)
-			eventCreate.save( (err, event) => {
+			if (!groupDoc.admins.includes(user.id)) {
+				res.json({
+					success: false
+				})
+			}
+			eventCreate.save((err, event) => {
 				if (err) {
 					console.log(err)
 					return handleError(err)
@@ -58,43 +61,25 @@ const Create = (req, res) => {
 
 // Event Info
 const GetEventInfoById = (req, res) => {
-	let eventMembers = []
-	model.Event.findById(req.query.id, function (err, eventDoc) {
-		if (err) {
-			console.log(err)
-			res.json({
-				success: false
-			})
-		} else {
-			let eventInfo = eventDoc
-			Promise.all(
-				eventInfo.members.map(function (member) {
-					return model.User.findById(member, {
-						password: 0,
-						token: 0,
-						groups: 0,
-						create_time: 0
-					}, function (err, memberDoc) {
-						if (err) {
-							return Promise.reject()
-						} else {
-							eventMembers.push(memberDoc.toObject())
-							return Promise.resolve()
-						}
-					})
-				})
-			).then(function () {
-				eventInfo = eventInfo.toObject()
-				eventInfo.members = eventMembers
-				res.send(JSON.stringify(eventInfo))
-			}, function (err) {
-				console.log(err)
+	model.Event.findById(req.query.id)
+		.populate({
+			path: 'members',
+			select: {
+				password: 0,
+				token: 0,
+				groups: 0,
+				create_time: 0
+			}
+		})
+		.exec((err, event) => {
+			if (err || !event) {
 				res.json({
 					success: false
 				})
-			})
-		}
-	})
+				return
+			}
+			res.send(event)
+		})
 }
 
 module.exports = {

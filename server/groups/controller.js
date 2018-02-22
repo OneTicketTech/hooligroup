@@ -37,63 +37,35 @@ const Create = (req, res) => {
 
 // Group info
 const GetGroupInfoById = (req, res) => {
-	model.Group.findById(req.query.id, function (err, groupDoc) {
-		if (err) {
-			console.log(err)
-			res.json({
-				success: false
-			})
-		} else {
-			let groupInfo = groupDoc
-			let groupMembers = []
-			let groupEvents = []
-			if (!groupInfo) {
+	model.Group.findById(req.query.id)
+		.populate({
+			path: 'members',
+			select: {
+				password: 0,
+				token: 0,
+				groups: 0,
+				create_time: 0
+			}
+		})
+		.populate({
+			path: 'admins',
+			select: {
+				password: 0,
+				token: 0,
+				groups: 0,
+				create_time: 0
+			}
+		})
+		.populate('events')
+		.exec((err, group) => {
+			if (err || !group) {
 				res.json({
 					success: false
 				})
 				return
 			}
-			Promise.all(
-				groupInfo.members.map(function (member) {
-					return model.User.findById(member, {
-						password: 0,
-						token: 0,
-						groups: 0,
-						create_time: 0
-					}, function (err, memberDoc) {
-						if (err) {
-							return Promise.reject()
-						} else {
-							groupMembers.push(memberDoc.toObject())
-							return Promise.resolve()
-						}
-					})
-				})
-			).then(() => {
-				return Promise.all(groupInfo.events.map(function (event) {
-					return model.Event.findById(event, function (err, eventDoc) {
-						if (err) {
-							return Promise.reject()
-						} else {
-							groupEvents.push(eventDoc.toObject())
-							console.log(groupEvents, 'groupEvents')
-							return Promise.resolve()
-						}
-					})
-				}))
-			}).then(function () {
-				groupInfo = groupInfo.toObject()
-				groupInfo.members = groupMembers
-				groupInfo.events = groupEvents
-				res.send(JSON.stringify(groupInfo))
-			}, function (err) {
-				console.log(err)
-				res.json({
-					success: false
-				})
-			})
-		}
-	})
+			res.send(group)
+		})
 }
 
 module.exports = {
