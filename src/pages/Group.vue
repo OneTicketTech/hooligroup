@@ -10,8 +10,8 @@
                     <div slot="header" class="clearfix">
                         <span style="line-height: 36px;">{{group.name}}</span>
                         <el-button style="float: right; margin-left: 5px;" type="success" @click="goDetail(group._id)">详情</el-button>
-                        <el-button v-if="isInGroup(group.members)" style="float: right; margin-left: 5px;" type="danger" @click="leaveGroup(group._id)">退出</el-button>
-                        <el-button v-else style="float: right; margin-left: 5px;" type="primary" @click="enroll(group._id)">报名</el-button>
+                        <el-button v-if="isInGroup(group.members)" style="float: right; margin-left: 5px;" type="danger" @click="leaveGroup(group)">退出</el-button>
+                        <el-button v-else style="float: right; margin-left: 5px;" type="primary" @click="enroll(group)">报名</el-button>
                     </div>
                     <div class="text item">
                         {{group.description}}
@@ -28,8 +28,8 @@
                     <div slot="header" class="clearfix">
                         <span style="line-height: 36px;">{{group.name}}</span>
                         <el-button style="float: right; margin-left: 5px;" type="success" @click="goDetail(group._id)">详情</el-button>
-                        <el-button v-if="isInGroup(group.members)" style="float: right; margin-left: 5px;" type="danger" @click="leaveGroup(group._id)">退出</el-button>
-                        <el-button v-else style="float: right; margin-left: 5px;" type="primary" @click="enroll(group._id)">报名</el-button>
+                        <el-button v-if="isInGroup(group.members)" style="float: right; margin-left: 5px;" type="danger" @click="leaveGroup(group)">退出</el-button>
+                        <el-button v-else style="float: right; margin-left: 5px;" type="primary" @click="enroll(group)">报名</el-button>
                     </div>
                     <div class="text item">
                         {{group.description}}
@@ -94,10 +94,11 @@ export default {
         isInGroup: function (members) {
             if (members) {
                 for (let i = 0; i < members.length; i++) {
-                    if (members[i]._id === this.userId) {
+                    if (members[i] === this.userId) {
                         return true;
                     }
                 }
+                //console.log(members);
             }
             return false;
         },
@@ -157,11 +158,11 @@ export default {
                 })
             }
         },
-        enroll(groupId) {
+        enroll(group) {
             let request = {}
-            request.id = groupId
+            request.id = group._id
             api.joinGroup(request).then((data) => {
-                this.getGroups()
+                group.members.push(this.userId);
                 this.$message({
                     type: 'success',
                     message: '报名成功'
@@ -173,11 +174,16 @@ export default {
                 })
             })
         },
-        leaveGroup(groupId) {
+        leaveGroup(group) {
             let request = {}
-            request.id = groupId
+            request.id = group._id
             api.leaveGroup(request).then((data) => {
-                this.getGroups()
+                for (let i = 0; i < group.members.length; i++) {
+                    if (group.members[i] === this.userId) {
+                        group.members.splice(i, 1);
+                        break;
+                    }
+                }
                 this.$message({
                     type: 'success',
                     message: '退出成功'

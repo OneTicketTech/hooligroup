@@ -103,7 +103,7 @@ export default {
             let request = {}
             request.id = groupId
             api.joinGroup(request).then((data) => {
-                var newUser = {};
+                let newUser = {};
                 newUser._id = this.userId;
                 newUser.name = this.username;
                 this.groupInfo.members.push(newUser)
