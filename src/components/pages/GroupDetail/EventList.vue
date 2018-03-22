@@ -34,11 +34,11 @@
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="活动开始时间">
-                    <el-date-picker v-model="eventForm.begin_time" type="datetime" placeholder="选择日期时间">
+                    <el-date-picker v-model="eventForm.begin_time" type="datetime" placeholder="选择日期时间" @change="verifyDate">
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="活动截止时间">
-                    <el-date-picker v-model="eventForm.end_time" type="datetime" placeholder="选择日期时间">
+                    <el-date-picker v-model="eventForm.end_time" type="datetime" placeholder="选择日期时间" @change="verifyDate">
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="活动简介">
@@ -47,7 +47,7 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="eventModalVisible = false">取 消</el-button>
-                <el-button type="primary" @click="createEvent">创建活动</el-button>
+                <el-button type="primary" :disabled="isDisabled" @click="createEvent">创建活动</el-button>
             </span>
         </el-dialog>
     </div>
@@ -75,6 +75,7 @@ export default {
                 enroll_begin_time: '',
                 enroll_end_time: ''
             },
+            isDisabled: true,
             eventModalVisible: false
         }
     },
@@ -139,6 +140,19 @@ export default {
         showEventModal() {
             this.eventModalVisible = true
         },
+        verifyDate() {
+            if(typeof(this.eventForm.begin_time)!="undifined" && typeof(this.eventForm.end_time)!="undifined"){
+                if(Date.parse(this.eventForm.begin_time)<Date.parse(this.eventForm.end_time)){
+                    this.isDisabled=false;
+                }
+                else{
+                    this.isDisabled=true;
+                }
+            }
+            else{
+                this.isDisabled=true;
+            }
+        },
         createEvent() {
             let that = this
             let request = Object.assign({}, that.eventForm)
@@ -153,6 +167,7 @@ export default {
                     description: ''
                 }
                 that.eventModalVisible = false
+                that.isDisabled =  true
                 that.$message({
                     type: 'success',
                     message: '创建成功'
