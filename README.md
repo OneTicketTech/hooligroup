@@ -1,6 +1,6 @@
 # Hooli Group
 
-> A website to help people build study groups.
+> A website to help people build study groups!
 
 ## Environment
 
